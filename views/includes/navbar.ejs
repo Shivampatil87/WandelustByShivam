@@ -24,7 +24,7 @@
                         <i class="fa-solid fa-circle-user"></i>&nbsp;&nbsp;&nbsp;
                     </button>
                     <ul class="dropdown-menu">
-                        <% if (!currUser) { %>
+                       <% if (typeof currUser === "undefined" || !currUser) { %>
                             <a class="nav-link" href="/signup"><i class="fa-solid fa-user-plus"></i>&nbsp; &nbsp;<b>Sign
                                     up</b></a>
                             <a class="nav-link" href="/login"><b><i class="fa-solid fa-user-check"></i>&nbsp; &nbsp;Log

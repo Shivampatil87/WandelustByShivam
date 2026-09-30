@@ -8,7 +8,6 @@ const app = express();
 const path = require("path");
 const methodOverride = require("method-override");
 const ejsMate = require("ejs-mate");
-
 const ExpressError = require("./utils/ExpressError.js");
 
 const session = require("express-session");
@@ -23,8 +22,6 @@ const User = require("./models/user.js");
 const listingRouter = require("./routes/listing.js");
 const reviewRouter = require("./routes/review.js");
 const userRouter = require("./routes/user.js");
-
-const db = require("./config/db.js");
 
 
 // --------------------
@@ -46,10 +43,12 @@ app.use(express.urlencoded({ extended: true }));
 // --------------------
 // MySQL Session Store
 // --------------------
+// Uses Railway environment variables in production
+// and local .env values during development.
 
 const sessionStore = new MySQLStore({
-    host: "127.0.0.1",
-    port: 3306,
+    host: process.env.DB_HOST,
+    port: process.env.DB_PORT || 3306,
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME
@@ -65,7 +64,9 @@ const sessionOptions = {
     saveUninitialized: false,
 
     cookie: {
-        expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        expires: new Date(
+            Date.now() + 7 * 24 * 60 * 60 * 1000
+        ),
         maxAge: 7 * 24 * 60 * 60 * 1000,
         httpOnly: true
     }
@@ -85,71 +86,86 @@ app.use(flash());
 // Passport
 // --------------------
 
-
 app.use(passport.initialize());
 
 app.use(passport.session());
 
 
-// This will be completed when we convert user.js
+// --------------------
+// Passport Local Strategy
+// --------------------
+
 passport.use(
-    new LocalStrategy(async (username, password, done) => {
+    new LocalStrategy(
+        async (username, password, done) => {
+            try {
 
-        try {
+                const user = await User.findByUsername(username);
 
-            const user = await User.findByUsername(username);
+                if (!user) {
+                    return done(null, false, {
+                        message: "Invalid username or password"
+                    });
+                }
 
-            if (!user) {
-                return done(null, false, {
-                    message: "Invalid username or password"
-                });
+                const isValid = await User.comparePassword(
+                    password,
+                    user.password_hash
+                );
+
+                if (!isValid) {
+                    return done(null, false, {
+                        message: "Invalid username or password"
+                    });
+                }
+
+                return done(null, user);
+
+            } catch (err) {
+
+                return done(err);
+
             }
-
-            const isValid = await User.comparePassword(
-                password,
-                user.password_hash
-            );
-
-            if (!isValid) {
-                return done(null, false, {
-                    message: "Invalid username or password"
-                });
-            }
-
-            return done(null, user);
-
-        } catch (err) {
-
-            return done(err);
-
         }
-
-    })
+    )
 );
+
+
+// --------------------
+// Serialize User
+// --------------------
 
 passport.serializeUser((user, done) => {
     done(null, user.id);
 });
 
-passport.deserializeUser(async (id, done) => {
 
-    try {
+// --------------------
+// Deserialize User
+// --------------------
 
-        const user = await User.findById(id);
+passport.deserializeUser(
+    async (id, done) => {
+        try {
 
-        done(null, user);
+            const user = await User.findById(id);
 
-    } catch (err) {
+            done(null, user);
 
-        done(err);
+        } catch (err) {
 
+            done(err);
+
+        }
     }
+);
 
-});
 
 // --------------------
-// Global variables
+// Global Variables
 // --------------------
+// Makes flash messages and current user
+// available to every EJS page.
 
 app.use((req, res, next) => {
 
@@ -164,18 +180,42 @@ app.use((req, res, next) => {
 
 
 // --------------------
-// Routes
+// Home Route
 // --------------------
 
 app.get("/", (req, res) => {
     res.redirect("/listings");
 });
 
-app.use("/listings", listingRouter);
 
-app.use("/listings/:id/reviews", reviewRouter);
+// --------------------
+// Listing Routes
+// --------------------
 
-app.use("/", userRouter);
+app.use(
+    "/listings",
+    listingRouter
+);
+
+
+// --------------------
+// Review Routes
+// --------------------
+
+app.use(
+    "/listings/:id/reviews",
+    reviewRouter
+);
+
+
+// --------------------
+// User Routes
+// --------------------
+
+app.use(
+    "/",
+    userRouter
+);
 
 
 // --------------------
@@ -183,7 +223,14 @@ app.use("/", userRouter);
 // --------------------
 
 app.all("*", (req, res, next) => {
-    next(new ExpressError(404, "Page Not Found!"));
+
+    next(
+        new ExpressError(
+            404,
+            "Page Not Found!"
+        )
+    );
+
 });
 
 
@@ -191,17 +238,23 @@ app.all("*", (req, res, next) => {
 // Error Handler
 // --------------------
 
-app.use((err, req, res, next) => {
+app.use(
+    (err, req, res, next) => {
 
-    let {
-        statusCode = 500,
-        message = "Some Error Occured!"
-    } = err;
+        const {
+            statusCode = 500,
+            message = "Some Error Occured!"
+        } = err;
 
-    res.status(statusCode).render("./listings/error.ejs", {
-        message
-    });
-});
+        res.status(statusCode).render(
+            "./listings/error.ejs",
+            {
+                message
+            }
+        );
+
+    }
+);
 
 
 // --------------------
@@ -211,5 +264,9 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 8080;
 
 app.listen(PORT, () => {
-    console.log(`Listening on port ${PORT}`);
+
+    console.log(
+        `Listening on port ${PORT}`
+    );
+
 });
