@@ -20,7 +20,7 @@
   - 🏷️ **Seamless Booking System**: Simplifies the reservation process
 
 #### Database 🗄️
-- **Database Management System**: MYSQL
+- **Database Management System**: MySQL
 - **Features**:
   - 🗂️ **Structured Database Schema**: For efficient data management
   - 🔍 **Database Queries**: To retrieve and store property and user information
