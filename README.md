@@ -20,7 +20,7 @@
   - 🏷️ **Seamless Booking System**: Simplifies the reservation process
 
 #### Database 🗄️
-- **Database Management System**: MongoDB Atlas
+- **Database Management System**: MYSQL
 - **Features**:
   - 🗂️ **Structured Database Schema**: For efficient data management
   - 🔍 **Database Queries**: To retrieve and store property and user information
@@ -45,7 +45,7 @@ The WanderLust project has been deployed using Render, connected with MongoDB At
 - **Live Application**: [WanderLust Project]((https://wandelustbyshivam.onrender.com/listings))
 
 #### Authors ✍️
-- **@resmit-dholariya**
+- **@ShivamPatil87**
 
 This WanderLust project showcases my proficiency in full-stack web development, from creating an engaging front-end to managing the back-end and database components. It allows users to search for properties and experience the key functionalities of a vacation rental platform in a seamless and secure manner.
 
