@@ -42,7 +42,7 @@
 #### Deployment 🚀
 The WanderLust project has been deployed using Render, connected with MongoDB Atlas for database management.
 
-- **Live Application**: [(https://wandelustbyshivam.onrender.com/listings)]
+- **Live Application**: https://wandelustbyshivam.onrender.com/listings
 
 #### Authors ✍️
 - **@Shivam Mahalle**
